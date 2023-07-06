@@ -19,7 +19,7 @@ const Upload = () => {
                       <Text fontSize={'15'} mt={'19'} color={'GrayText'} fontWeight={'500'}>File Should be Jpeg, Png...</Text>
 
                       <Box border={'dashed'} borderColor={'#97BEF4'} borderWidth={'2px'} rounded={'xl'} h={'300'} w={'70%'} my='19' backgroundColor={'gray.50'}>
-
+                      <Text>Drag and drop your images here</Text>
                       </Box>
                   </Card>
               </GridItem>
