@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useRef} from 'react'
 import {
     Box,
     Grid,
@@ -14,6 +14,7 @@ import bgimage from './images/bgimage.svg'
 import './index.css'
 
 const Upload = () => {
+const fileInputRef = useRef(null);
 const [droppedFile, setDroppedFile] = useState(null)
 
 const handleDragEnter = (event) => {
@@ -26,18 +27,28 @@ const handleDragLeave = (event) => {
 
 const handleDragOver = (event) => {
   event.preventDefault()
+  const file = event.dataTransfer.files[0]
+  setDroppedFile(file)
 }
 
 const handleDrop = (event) => {
   event.preventDefault()
   const file = event.dataTransfer.files[0]
-  setDroppedFile(file)
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const bufferArray = new Uint8Array(event.target.result);
+    const base64String = btoa(bufferArray.reduce((data, byte) => data + String.fromCharCode(byte), ""));
+
+    setDroppedFile(base64String)
+  }
+
+  reader.readAsArrayBuffer(file)
+
 }
 
-const handleFileSelect = (event) => {
-  event.preventDefault()
-  const file = event.target.files[0]
-  setDroppedFile(file)
+const handleClick = () => {
+  fileInputRef.current.click();
 }
 
   useEffect(() => {
@@ -46,6 +57,7 @@ const handleFileSelect = (event) => {
     fileInput.addEventListener('dragleave', handleDragLeave);
     fileInput.addEventListener('dragover', handleDragOver);
     fileInput.addEventListener('drop', handleDrop);
+    fileInput.addEventListener('click', handleClick)
 
     return () => {
       // Clean up event listeners when component unmounts
@@ -53,8 +65,13 @@ const handleFileSelect = (event) => {
       fileInput.removeEventListener('dragleave', handleDragLeave);
       fileInput.removeEventListener('dragover', handleDragOver);
       fileInput.removeEventListener('drop', handleDrop);
+      fileInput.removeEventListener('click', handleClick)
     };
   }, []);
+
+  // useEffect(() => {
+  //   console.log(droppedFile?.slice(0, 12));
+  // }, [droppedFile])
 
 
   return (
@@ -66,8 +83,20 @@ const handleFileSelect = (event) => {
                 <Text fontWeight={'800'} color={'gray.700'} mt='10' >Upload your Image</Text>
                 <Text fontSize={'15'} mt={'19'} color={'GrayText'} fontWeight={'600'}>File Should be Jpeg, Png...</Text>
 
-                <Grid border={'dashed'} borderColor={'#97BEF4'} borderWidth={'2px'} rounded={'2xl'} h={'auto'} w={'auto'} my='19' px='20' backgroundColor={'gray.50'} py='10' gap={10}>
-                  <Input type='file' id='fileInput' onChange={handleFileSelect}/>
+              <Grid 
+              border={'dashed'} 
+              borderColor={'#97BEF4'} 
+              borderWidth={'2px'} 
+              rounded={'2xl'} 
+              h={'auto'} 
+              w={'auto'} 
+              my='19' px='20' 
+              backgroundColor={'gray.50'} 
+              py='10' gap={10} 
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              >
+                  <Input type='file' id='fileInput' display={'none'}/>
                   <Box display='flex' justifyContent='center' alignItems='center'>
                     <Image src = {bgimage} alt='picture' boxSize={150} ></Image>
                   </Box>
@@ -75,7 +104,7 @@ const handleFileSelect = (event) => {
                 </Grid>
                 <Grid gap={8}>
                   <Text fontSize={20} fontWeight={'700'} color={'gray.400'}>Or</Text>
-                  <Button colorScheme='blue' mb={12}>Choose a file</Button>
+                  <Button colorScheme='blue' mb={12} onClick={handleClick}>Choose a file</Button>
                 </Grid>
               </Card>
             </GridItem>
