@@ -27,12 +27,25 @@ const handleDragLeave = (event) => {
 
 const handleDragOver = (event) => {
   event.preventDefault()
-  const file = event.dataTransfer.files[0]
-  setDroppedFile(file)
+}
+
+const handleFileProcessing = (event) => {
+  event.preventDefault()
+  const file = event.target.files[0]
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const base64String = reader.result;
+
+    setDroppedFile(base64String)
+  }
+
+  reader.readAsDataURL(file)
 }
 
 const handleDrop = (event) => {
   event.preventDefault()
+  
   const file = event.dataTransfer.files[0]
 
   const reader = new FileReader();
@@ -40,7 +53,7 @@ const handleDrop = (event) => {
     const bufferArray = new Uint8Array(event.target.result);
     const base64String = btoa(bufferArray.reduce((data, byte) => data + String.fromCharCode(byte), ""));
 
-    setDroppedFile(base64String)
+    setDroppedFile('data:image/png;base64,' + base64String)
   }
 
   reader.readAsArrayBuffer(file)
@@ -48,7 +61,7 @@ const handleDrop = (event) => {
 }
 
 const handleClick = () => {
-  fileInputRef.current.click();
+  fileInputRef.current.click()
 }
 
   useEffect(() => {
@@ -69,9 +82,9 @@ const handleClick = () => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   console.log(droppedFile?.slice(0, 12));
-  // }, [droppedFile])
+  useEffect(() => {
+    console.log(droppedFile?.slice(0, 22));
+  }, [droppedFile])
 
 
   return (
@@ -96,7 +109,7 @@ const handleClick = () => {
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               >
-                  <Input type='file' id='fileInput' display={'none'}/>
+                  <Input type='file' id='fileInput' display={'none'} ref={fileInputRef} onChange={handleFileProcessing}/>
                   <Box display='flex' justifyContent='center' alignItems='center'>
                     <Image src = {bgimage} alt='picture' boxSize={150} ></Image>
                   </Box>
