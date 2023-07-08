@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import {
     Box,
     Grid,
@@ -6,23 +6,79 @@ import {
     Text,
     GridItem,
     Center,
+    Image,
+    Button,
+    Input,
 } from '@chakra-ui/react';
+import bgimage from './images/bgimage.svg'
+import './index.css'
 
 const Upload = () => {
-  return (
-    <Center>
-      <Box textAlign={'center'} fontSize={'30'} w={'100%'} border={'rounded'}>
-          <Grid templateColumns='repeat(1, 1fr)' placeItems={'center'}>
-              <GridItem w='40%' h='20'>
-                  <Card boxShadow='lg' alignItems='center'>
-                      <Text fontWeight={'500'} color={'gray.600'}>Upload your Image</Text>
-                      <Text fontSize={'15'} mt={'19'} color={'GrayText'} fontWeight={'500'}>File Should be Jpeg, Png...</Text>
+const [droppedFile, setDroppedFile] = useState(null)
 
-                      <Box border={'dashed'} borderColor={'#97BEF4'} borderWidth={'2px'} rounded={'xl'} h={'300'} w={'70%'} my='19' backgroundColor={'gray.50'}>
-                      <Text>Drag and drop your images here</Text>
-                      </Box>
-                  </Card>
-              </GridItem>
+const handleDragEnter = (event) => {
+  event.preventDefault()
+}
+
+const handleDragLeave = (event) => {
+  event.preventDefault()
+}
+
+const handleDragOver = (event) => {
+  event.preventDefault()
+}
+
+const handleDrop = (event) => {
+  event.preventDefault()
+  const file = event.dataTransfer.files[0]
+  setDroppedFile(file)
+}
+
+const handleFileSelect = (event) => {
+  event.preventDefault()
+  const file = event.target.files[0]
+  setDroppedFile(file)
+}
+
+  useEffect(() => {
+    const fileInput = document.getElementById('fileInput');
+    fileInput.addEventListener('dragenter', handleDragEnter);
+    fileInput.addEventListener('dragleave', handleDragLeave);
+    fileInput.addEventListener('dragover', handleDragOver);
+    fileInput.addEventListener('drop', handleDrop);
+
+    return () => {
+      // Clean up event listeners when component unmounts
+      fileInput.removeEventListener('dragenter', handleDragEnter);
+      fileInput.removeEventListener('dragleave', handleDragLeave);
+      fileInput.removeEventListener('dragover', handleDragOver);
+      fileInput.removeEventListener('drop', handleDrop);
+    };
+  }, []);
+
+
+  return (
+    <Center h='100vh' bg='gray.50'>
+      <Box textAlign={'center'} fontSize={'30'} w={'auto'} border={'rounded'} justifySelf='center' alignSelf={'center'}>
+          <Grid>
+            <GridItem w='auto' h='auto' className='font1'>
+              <Card boxShadow='xl' rounded={'2xl'} alignItems='center' px='10'>
+                <Text fontWeight={'800'} color={'gray.700'} mt='10' >Upload your Image</Text>
+                <Text fontSize={'15'} mt={'19'} color={'GrayText'} fontWeight={'600'}>File Should be Jpeg, Png...</Text>
+
+                <Grid border={'dashed'} borderColor={'#97BEF4'} borderWidth={'2px'} rounded={'2xl'} h={'auto'} w={'auto'} my='19' px='20' backgroundColor={'gray.50'} py='10' gap={10}>
+                  <Input type='file' id='fileInput' onChange={handleFileSelect}/>
+                  <Box display='flex' justifyContent='center' alignItems='center'>
+                    <Image src = {bgimage} alt='picture' boxSize={150} ></Image>
+                  </Box>
+                  <Text fontSize={20} fontWeight={'700'} color={'gray.400'}>Drag and drop your image here</Text>
+                </Grid>
+                <Grid gap={8}>
+                  <Text fontSize={20} fontWeight={'700'} color={'gray.400'}>Or</Text>
+                  <Button colorScheme='blue' mb={12}>Choose a file</Button>
+                </Grid>
+              </Card>
+            </GridItem>
           </Grid>
       </Box>
     </Center>
