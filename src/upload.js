@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react'
+import React, {useEffect, useState, useRef, useCallback} from 'react'
 import {
     Box,
     Grid,
@@ -10,26 +10,61 @@ import {
     Button,
     Input,
     Progress,
+    InputGroup,
+    InputRightElement
 } from '@chakra-ui/react';
 import bgimage from './images/bgimage.svg'
 import './index.css'
+import { BiCheckCircle } from 'react-icons/bi'
+
+function PasswordInput(placeholder) {
+  const [show, setShow] = React.useState(false)
+  const handleClick = () => setShow(!show)
+
+  return (
+    <InputGroup size='md'>
+      <Input
+        pr='4.5rem'
+        type={show ? 'text' : 'password'}
+        placeholder={placeholder}
+      />
+      <InputRightElement width='4.5rem'>
+        <Button h='1.75rem' size='sm' onClick={handleClick}>
+          {show ? 'Hide' : 'Show'}
+        </Button>
+      </InputRightElement>
+    </InputGroup>
+  )
+}
 
 const Upload = () => {
 const fileInputRef = useRef(null);
 const [droppedFile, setDroppedFile] = useState(null)
 const [loadingProgress, setLoadingProgress] = useState(null)
 const [imageLoading, setImageLoading] = useState(false)
-
-const handleDragEnter = (event) => {
-  event.preventDefault()
-}
-
-const handleDragLeave = (event) => {
-  event.preventDefault()
-}
+const [isImageLoaded, setIsImageLoaded] = useState(false)
 
 const handleDragOver = (event) => {
   event.preventDefault()
+}
+
+const handleOnProgress = (reader) => {
+  reader.onloadstart = () => {
+    setImageLoading(true)
+  }
+
+  
+  reader.onprogress = (event) => {
+    if (event.lengthComputable) {
+      let progress = (event.loaded / event.total) * 100;
+      if (progress < 100) {
+        setLoadingProgress(progress)
+      } else if (progress === 100) {
+        setInterval(() => {
+          setLoadingProgress(progress)}, 1000)
+      }
+    }
+  };
 }
 
 const handleFileProcessing = (event) => {
@@ -38,47 +73,41 @@ const handleFileProcessing = (event) => {
 
   const reader = new FileReader();
 
-  reader.onloadstart = () => {
-    setImageLoading(true)
-  }
-
-  reader.onprogress = (event) => {
-    if (event.lengthComputable) {
-      let progress = (event.loaded / event.total) * 100;
-      if(progress < 100) {
-        setLoadingProgress(progress)
-      } else if(progress === 100){
-        setInterval(() => setLoadingProgress(progress), 1000)
-      }
-    }
-  };
+  handleOnProgress(reader)
 
   reader.onload = () => {
     const base64String = reader.result;
 
     setDroppedFile(base64String)
-    setInterval(() => {setImageLoading(false)}, 3000)
+    setInterval(() => {
+      setImageLoading(false)
+      setIsImageLoaded(true)
+    }, 3000)
   }
 
   reader.readAsDataURL(file)
 }
 
-const handleDrop = (event) => {
-  event.preventDefault()
-  
-  const file = event.dataTransfer.files[0]
+  const handleDrop = useCallback((event) => {
+    event.preventDefault();
 
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    const bufferArray = new Uint8Array(event.target.result);
-    const base64String = btoa(bufferArray.reduce((data, byte) => data + String.fromCharCode(byte), ""));
+    const file = event.dataTransfer.files[0];
 
-    setDroppedFile('data:image/png;base64,' + base64String)
-  }
+    const reader = new FileReader();
+    handleOnProgress(reader);
 
-  reader.readAsArrayBuffer(file)
+    reader.onload = () => {
+      const imageUrl = URL.createObjectURL(file);
+      setDroppedFile(imageUrl);
+      setInterval(() => {
+        setImageLoading(false);
+        setIsImageLoaded(true);
+      }, 3000);
+    };
 
-}
+    reader.readAsDataURL(file);
+  }, []);
+
 
 const handleClick = () => {
   fileInputRef.current.click()
@@ -86,27 +115,21 @@ const handleClick = () => {
 
   useEffect(() => {
     const fileInput = document.getElementById('fileInput');
-    fileInput.addEventListener('dragenter', handleDragEnter);
-    fileInput.addEventListener('dragleave', handleDragLeave);
     fileInput.addEventListener('dragover', handleDragOver);
     fileInput.addEventListener('drop', handleDrop);
     fileInput.addEventListener('click', handleClick)
 
     return () => {
-      // Clean up event listeners when component unmounts
-      fileInput.removeEventListener('dragenter', handleDragEnter);
-      fileInput.removeEventListener('dragleave', handleDragLeave);
+      // Clean up event listeners when component unmounts 
       fileInput.removeEventListener('dragover', handleDragOver);
       fileInput.removeEventListener('drop', handleDrop);
       fileInput.removeEventListener('click', handleClick)
     };
-  }, []);
+  }, [handleDrop]);
 
   useEffect(() => {
-    console.log(droppedFile?.slice(0, 22));
-    console.log(loadingProgress);
-  }, [droppedFile, loadingProgress])
-
+    console.log(droppedFile);
+  }, [droppedFile])
 
   return (
     <Center h='100vh' bg='gray.50'>
@@ -126,38 +149,72 @@ const handleClick = () => {
               </Card>
             </>) : (
             <>
-                <Grid>
-                  <GridItem w='auto' h='auto' className='font1'>
-                    <Card boxShadow='xl' rounded={'2xl'} alignItems='center' px='10'>
-                      <Text fontWeight={'800'} color={'gray.700'} mt='10' >Upload your Image</Text>
-                      <Text fontSize={'15'} mt={'19'} color={'GrayText'} fontWeight={'600'}>File Should be Jpeg, Png...</Text>
+                {
+                  isImageLoaded ? (
+                  <> 
+                      <Grid>
+                        <GridItem w='auto' h='auto' className='font1'>
+                          <Card boxShadow='xl' rounded={'2xl'} alignItems='center' px='10'>
+                            <Box pt='12'>
+                              <BiCheckCircle color='green' fontSize={'50'}/>
+                            </Box>
+                            <Text fontWeight={'800'} color={'gray.700'} pt='5' fontSize={'22'} >Uploaded successfully!</Text>
+                            <Grid
+                              py='10' 
+                              gap={10}
+                              onDragOver={handleDragOver}
+                              onDrop={handleDrop}
+                            >
+                              <Input type='file' id='fileInput' display={'none'} ref={fileInputRef} onChange={handleFileProcessing} />
+                              
+                              <Box display='flex' justifyContent='center' alignItems='center'>
+                                <Image src={droppedFile} alt='picture' h={'224'} w={'338'} rounded={'2xl'}></Image>
+                              </Box>
 
-                      <Grid
-                        border={'dashed'}
-                        borderColor={'#97BEF4'}
-                        borderWidth={'2px'}
-                        rounded={'2xl'}
-                        h={'auto'}
-                        w={'auto'}
-                        my='19' px='20'
-                        backgroundColor={'gray.50'}
-                        py='10' gap={10}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop}
-                      >
-                        <Input type='file' id='fileInput' display={'none'} ref={fileInputRef} onChange={handleFileProcessing} />
-                        <Box display='flex' justifyContent='center' alignItems='center'>
-                          <Image src={bgimage} alt='picture' boxSize={150} ></Image>
-                        </Box>
-                        <Text fontSize={20} fontWeight={'700'} color={'gray.400'}>Drag and drop your image here</Text>
+                              <Box>
+                                  <PasswordInput placeholder={'image link'}/>
+                              </Box>
+                            </Grid>
+                          </Card>
+                        </GridItem>
                       </Grid>
-                      <Grid gap={8}>
-                        <Text fontSize={20} fontWeight={'700'} color={'gray.400'}>Or</Text>
-                        <Button colorScheme='blue' mb={12} onClick={handleClick}>Choose a file</Button>
+                  </>) : (
+                  <> 
+                      <Grid>
+                        <GridItem w='auto' h='auto' className='font1'>
+                          <Card boxShadow='xl' rounded={'2xl'} alignItems='center' px='10'>
+                            <Text fontWeight={'800'} color={'gray.700'} mt='10' >Upload your Image</Text>
+                            <Text fontSize={'15'} mt={'19'} color={'GrayText'} fontWeight={'600'}>File Should be Jpeg, Png...</Text>
+
+                            <Grid
+                              border={'dashed'}
+                              borderColor={'#97BEF4'}
+                              borderWidth={'2px'}
+                              rounded={'2xl'}
+                              h={'auto'}
+                              w={'auto'}
+                              my='19' px='20'
+                              backgroundColor={'gray.50'}
+                              py='10' gap={10}
+                              onDragOver={handleDragOver}
+                              onDrop={handleDrop}
+                            >
+                              <Input type='file' id='fileInput' display={'none'} ref={fileInputRef} onChange={handleFileProcessing} />
+                              <Box display='flex' justifyContent='center' alignItems='center'>
+                                <Image src={bgimage} alt='picture' boxSize={150} ></Image>
+                              </Box>
+                              <Text fontSize={20} fontWeight={'700'} color={'gray.400'}>Drag and drop your image here</Text>
+                            </Grid>
+                            <Grid gap={8}>
+                              <Text fontSize={20} fontWeight={'700'} color={'gray.400'}>Or</Text>
+                              <Button colorScheme='blue' mb={12} onClick={handleClick}>Choose a file</Button>
+                            </Grid>
+                          </Card>
+                        </GridItem>
                       </Grid>
-                    </Card>
-                  </GridItem>
-                </Grid>
+                  </>)
+                }
+                
             </>)
         }
       </Box>
