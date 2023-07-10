@@ -11,26 +11,25 @@ import {
     Input,
     Progress,
     InputGroup,
-    InputRightElement
+    InputRightElement,
 } from '@chakra-ui/react';
 import bgimage from './images/bgimage.svg'
 import './index.css'
 import { BiCheckCircle } from 'react-icons/bi'
+import Footer from './footer';
 
-function PasswordInput(placeholder) {
-  const [show, setShow] = React.useState(false)
-  const handleClick = () => setShow(!show)
+function PasswordInput({placeholder, clipboardState, isCopied}) {
 
   return (
     <InputGroup size='md'>
       <Input
         pr='4.5rem'
-        type={show ? 'text' : 'password'}
-        placeholder={placeholder}
+        type='text'
+        placeholder={placeholder.split(50,100)}
+        isReadOnly
       />
       <InputRightElement width='4.5rem'>
-        <Button h='1.75rem' size='sm' onClick={handleClick}>
-          {show ? 'Hide' : 'Show'}
+        <Button colorScheme='blue' h='1.75rem' size='sm' onClick={clipboardState}> {isCopied ? 'Copied!' : 'Copy'}
         </Button>
       </InputRightElement>
     </InputGroup>
@@ -39,10 +38,19 @@ function PasswordInput(placeholder) {
 
 const Upload = () => {
 const fileInputRef = useRef(null);
-const [droppedFile, setDroppedFile] = useState(null)
+const [droppedFile, setDroppedFile] = useState("")
 const [loadingProgress, setLoadingProgress] = useState(null)
 const [imageLoading, setImageLoading] = useState(false)
 const [isImageLoaded, setIsImageLoaded] = useState(false)
+const [isCopied, setIsCopied] = useState(false)
+
+const handleClipboardState = ({placeholder}) => {
+  navigator.clipboard.writeText(placeholder)
+  .then(() => setIsCopied(true))
+  setInterval(() => {
+    setIsCopied(false)
+  }, 5000);
+}
 
 const handleDragOver = (event) => {
   event.preventDefault()
@@ -53,7 +61,6 @@ const handleOnProgress = (reader) => {
     setImageLoading(true)
   }
 
-  
   reader.onprogress = (event) => {
     if (event.lengthComputable) {
       let progress = (event.loaded / event.total) * 100;
@@ -70,50 +77,47 @@ const handleOnProgress = (reader) => {
 const handleFileProcessing = (event) => {
   event.preventDefault()
   const file = event.target.files[0]
-
   const reader = new FileReader();
 
   handleOnProgress(reader)
 
   reader.onload = () => {
-    const base64String = reader.result;
-
-    setDroppedFile(base64String)
+    const imageUrl = reader.result;
+    console.log(imageUrl);
+    setDroppedFile(imageUrl)
     setInterval(() => {
       setImageLoading(false)
       setIsImageLoaded(true)
-    }, 3000)
+    }, 2000)
   }
 
   reader.readAsDataURL(file)
 }
 
-  const handleDrop = useCallback((event) => {
-    event.preventDefault();
+const handleDrop = useCallback((event) => {
+  event.preventDefault();
+  const file = event.dataTransfer.files[0];
+  const reader = new FileReader();
+  handleOnProgress(reader);
 
-    const file = event.dataTransfer.files[0];
+  reader.onload = () => {
+    const imageUrl = reader.result;
+    setDroppedFile(imageUrl);
+    setInterval(() => {
+      setImageLoading(false);
+      setIsImageLoaded(true);
+    }, 3000);
+  };
 
-    const reader = new FileReader();
-    handleOnProgress(reader);
-
-    reader.onload = () => {
-      const imageUrl = URL.createObjectURL(file);
-      setDroppedFile(imageUrl);
-      setInterval(() => {
-        setImageLoading(false);
-        setIsImageLoaded(true);
-      }, 3000);
-    };
-
-    reader.readAsDataURL(file);
-  }, []);
+  reader.readAsDataURL(file);
+}, []);
 
 
 const handleClick = () => {
   fileInputRef.current.click()
 }
 
-  useEffect(() => {
+useEffect(() => {
     const fileInput = document.getElementById('fileInput');
     fileInput.addEventListener('dragover', handleDragOver);
     fileInput.addEventListener('drop', handleDrop);
@@ -125,11 +129,11 @@ const handleClick = () => {
       fileInput.removeEventListener('drop', handleDrop);
       fileInput.removeEventListener('click', handleClick)
     };
-  }, [handleDrop]);
+}, [handleDrop]);
 
-  useEffect(() => {
-    console.log(droppedFile);
-  }, [droppedFile])
+useEffect(() => {
+    console.log(droppedFile.current);
+}, [droppedFile])
 
   return (
     <Center h='100vh' bg='gray.50'>
@@ -172,7 +176,7 @@ const handleClick = () => {
                               </Box>
 
                               <Box>
-                                  <PasswordInput placeholder={'image link'}/>
+                                <PasswordInput placeholder={droppedFile} clipboardState={() => handleClipboardState(droppedFile)} isCopied={isCopied}/>
                               </Box>
                             </Grid>
                           </Card>
@@ -217,6 +221,7 @@ const handleClick = () => {
                 
             </>)
         }
+      <Footer />
       </Box>
     </Center>
   )
