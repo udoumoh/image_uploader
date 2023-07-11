@@ -7,8 +7,8 @@ Loading progress indicator
 Image preview after upload
 Copy image URL to clipboard
 Installation
-Clone the repository: git clone https://github.com/your-username/image-uploader.git
-Navigate to the project directory: cd image-uploader
+Clone the repository: git clone https://github.com/udoumoh/image_uploader.git
+Navigate to the project directory: cd image_uploader
 Install dependencies: npm install
 Start the development server: npm start
 Open your browser and go to http://localhost:3000
