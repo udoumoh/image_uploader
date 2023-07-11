@@ -1,9 +1,10 @@
 import React from 'react'
+import '../css/style.css'
 
 const Footer = () => {
   return (
-    <footer>
-          <p style={{ textAlign: 'center', fontSize: '20px', marginTop: '5px' }}>Created by <span style={{ color: 'blue' }}>Udoumoh</span> - <a href='https://devchallenges.io/'>devChallenges.io</a></p>
+    <footer className='footer_style'>
+      <p className='footer_text'>Created by <span> Udoumoh </span> - <a href='https://devchallenges.io/'>devChallenges.io</a></p>
     </footer>
   )
 }

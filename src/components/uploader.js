@@ -25,7 +25,7 @@ const Uploader = ({handleDragOver, handleDrop, bgimage, fileInputRef, handleFile
                       rounded={'2xl'}
                       h={'auto'}
                       w={'auto'}
-                      my='19' px='20'
+                      my='19' px='10'
                       backgroundColor={'gray.50'}
                       py='10' gap={10}
                       onDragOver={handleDragOver}

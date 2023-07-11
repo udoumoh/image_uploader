@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap');
+
+.font1{
+    font-family: 'Poppins', sans-serif;
+}
+
+footer{
+    position: absolute;
+    bottom: 0;
+    width: auto;
+    height: auto;
+    font-weight: 600;
+}
+
+footer p {
+    text-align: center ;
+   font-size: 1.2rem;
+   margin-bottom: 10px;
+   color: rgb(161, 161, 161);
+}
+
+footer p span{
+    color: rgb(102, 102, 102);
+    font-weight: bold;
+    text-align: center;
+}

@@ -14,7 +14,7 @@ import {
     InputRightElement,
 } from '@chakra-ui/react';
 import bgimage from '../images/bgimage.svg'
-import '../index.css'
+import '../css/style.css';
 import { BiCheckCircle } from 'react-icons/bi'
 import Footer from './footer';
 import Uploader from './uploader';
@@ -45,8 +45,8 @@ const [imageLoading, setImageLoading] = useState(false)
 const [isImageLoaded, setIsImageLoaded] = useState(false)
 const [isCopied, setIsCopied] = useState(false)
 
-const handleClipboardState = ({placeholder}) => {
-  navigator.clipboard.writeText(placeholder)
+const handleClipboardState = () => {
+  navigator.clipboard.writeText(droppedFile)
   .then(() => setIsCopied(true))
   setInterval(() => {
     setIsCopied(false)
@@ -177,7 +177,7 @@ useEffect(() => {
                               </Box>
 
                               <Box>
-                                <PasswordInput placeholder={droppedFile} clipboardState={() => handleClipboardState(droppedFile)} isCopied={isCopied}/>
+                                <PasswordInput placeholder={droppedFile} clipboardState={handleClipboardState} isCopied={isCopied}/>
                               </Box>
                             </Grid>
                           </Card>
@@ -188,7 +188,9 @@ useEffect(() => {
                 
             </>)
         }
+        <Box display={'flex'} justifyContent={'center'}>
       <Footer />
+        </Box>
       </Box>
     </Center>
   )
