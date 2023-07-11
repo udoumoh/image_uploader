@@ -26,7 +26,6 @@ This project is licensed under the MIT License.
 Acknowledgments
 React
 Chakra UI
-Feel free to customize this readme file according to your project's specific details and requirements.
 
 
 
