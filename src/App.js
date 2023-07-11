@@ -3,7 +3,7 @@ import {
   ChakraProvider,
   theme,
 } from '@chakra-ui/react';
-import Upload from './upload';
+import Upload from './components/upload';
 // import { Logo } from './Logo';
 
 function App() {
